@@ -31,7 +31,7 @@ A tool for converting 3D mesh files into Empyrion Galactic Survival blueprint fi
 ### Option 2: Build from Source
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/EmpyrionMeshConverter.git
+   git clone https://github.com/heyitsmk/EmpyrionMeshConverter.git
    ```
 2. Ensure you have .NET 8.0 SDK installed
 3. Open `EmpyrionMeshConverter.sln` in Visual Studio 2022
