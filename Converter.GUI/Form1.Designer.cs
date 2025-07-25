@@ -30,12 +30,13 @@
         private void InitializeComponent()
         {
                          groupBoxFiles = new GroupBox();
-             buttonBrowseOutput = new Button();
-             textBoxOutputPath = new TextBox();
-             labelOutputPath = new Label();
-             buttonBrowseMesh = new Button();
-             textBoxMeshPath = new TextBox();
-             labelMeshPath = new Label();
+                         buttonBrowseOutput = new Button();
+            textBoxOutputPath = new TextBox();
+            labelOutputPath = new Label();
+            buttonBrowseMesh = new Button();
+            buttonPreviewMesh = new Button();
+            textBoxMeshPath = new TextBox();
+            labelMeshPath = new Label();
              buttonBrowseTemplate = new Button();
              textBoxTemplatePath = new TextBox();
              labelTemplatePath = new Label();
@@ -85,6 +86,7 @@
             groupBoxFiles.Controls.Add(textBoxOutputPath);
             groupBoxFiles.Controls.Add(labelOutputPath);
             groupBoxFiles.Controls.Add(buttonBrowseMesh);
+            groupBoxFiles.Controls.Add(buttonPreviewMesh);
             groupBoxFiles.Controls.Add(textBoxMeshPath);
             groupBoxFiles.Controls.Add(labelMeshPath);
             groupBoxFiles.Controls.Add(buttonBrowseTemplate);
@@ -133,11 +135,21 @@
             buttonBrowseMesh.UseVisualStyleBackColor = true;
             buttonBrowseMesh.Click += buttonBrowseMesh_Click;
             // 
+            // buttonPreviewMesh
+            // 
+            buttonPreviewMesh.Location = new Point(398, 56);
+            buttonPreviewMesh.Name = "buttonPreviewMesh";
+            buttonPreviewMesh.Size = new Size(75, 23);
+            buttonPreviewMesh.TabIndex = 6;
+            buttonPreviewMesh.Text = "Preview...";
+            buttonPreviewMesh.UseVisualStyleBackColor = true;
+            buttonPreviewMesh.Click += buttonPreviewMesh_Click;
+            // 
             // textBoxMeshPath
             // 
             textBoxMeshPath.Location = new Point(120, 57);
             textBoxMeshPath.Name = "textBoxMeshPath";
-            textBoxMeshPath.Size = new Size(353, 23);
+            textBoxMeshPath.Size = new Size(272, 23);
             textBoxMeshPath.TabIndex = 4;
             // 
             // labelMeshPath
@@ -499,10 +511,11 @@
          private System.Windows.Forms.Button buttonBrowseTemplate;
          private System.Windows.Forms.TextBox textBoxTemplatePath;
          private System.Windows.Forms.Label labelTemplatePath;
-         private System.Windows.Forms.Button buttonBrowseMesh;
-         private System.Windows.Forms.TextBox textBoxMeshPath;
-         private System.Windows.Forms.Label labelMeshPath;
-         private System.Windows.Forms.Button buttonBrowseOutput;
+                 private System.Windows.Forms.Button buttonBrowseMesh;
+        private System.Windows.Forms.Button buttonPreviewMesh;
+        private System.Windows.Forms.TextBox textBoxMeshPath;
+        private System.Windows.Forms.Label labelMeshPath;
+        private System.Windows.Forms.Button buttonBrowseOutput;
          private System.Windows.Forms.TextBox textBoxOutputPath;
          private System.Windows.Forms.Label labelOutputPath;
          private System.Windows.Forms.GroupBox groupBoxBlueprintInfo;

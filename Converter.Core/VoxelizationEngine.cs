@@ -27,8 +27,17 @@ namespace Converter.Core
             // Step 2: Scale triangles to target size
             var scaledTriangles = ScaleTrianglesForMaxSize(centeredTriangles, config.MaxSize, progress);
 
-            // Step 3: Generate points from scaled triangles at specified resolution
-            var points = GeneratePointsFromTriangles(scaledTriangles, config.Resolution, progress);
+            // Step 3: Apply mirror voxelization if requested
+            HashSet<Vector3<int>> points;
+            if (config.UseMirrorVoxelization && config.MirrorPlane != MirrorPlane.None)
+            {
+                points = GeneratePointsWithMirroring(scaledTriangles, config, progress);
+            }
+            else
+            {
+                // Step 3: Generate points from scaled triangles at specified resolution
+                points = GeneratePointsFromTriangles(scaledTriangles, config.Resolution, progress);
+            }
             stats.GeneratedVoxels = points.Count;
             
             progress?.Report($"Generated {points.Count} voxels from triangulation");
@@ -457,6 +466,144 @@ namespace Converter.Core
             };
 
             return (translatedVoxels, newBounds);
+        }
+
+        /// <summary>
+        /// Generate voxels using mirror-based voxelization for symmetrical meshes
+        /// </summary>
+        private HashSet<Vector3<int>> GeneratePointsWithMirroring(List<Triangle> triangles, ConversionConfiguration config, IProgress<string>? progress)
+        {
+            progress?.Report($"Starting mirror voxelization using {config.MirrorPlane} plane...");
+
+            // Step 1: Clip triangles to positive half-space of mirror plane
+            var halfTriangles = ClipTrianglesToHalfSpace(triangles, config.MirrorPlane);
+            progress?.Report($"Clipped to {halfTriangles.Count} triangles on positive side of {config.MirrorPlane} plane");
+
+            // Step 2: Voxelize the half-mesh
+            var halfVoxels = GeneratePointsFromTriangles(halfTriangles, config.Resolution, progress);
+            progress?.Report($"Generated {halfVoxels.Count} voxels from half-mesh");
+
+            // Step 3: Mirror the voxels to create the full mesh
+            var mirroredVoxels = MirrorVoxels(halfVoxels, config.MirrorPlane);
+            progress?.Report($"Generated {mirroredVoxels.Count} mirrored voxels");
+
+            // Step 4: Combine both halves
+            var allVoxels = new HashSet<Vector3<int>>(halfVoxels);
+            foreach (var voxel in mirroredVoxels)
+            {
+                allVoxels.Add(voxel);
+            }
+
+            progress?.Report($"Total voxels after mirroring: {allVoxels.Count}");
+            return allVoxels;
+        }
+
+        /// <summary>
+        /// Clip triangles to the positive half-space of the specified mirror plane
+        /// </summary>
+        private List<Triangle> ClipTrianglesToHalfSpace(List<Triangle> triangles, MirrorPlane mirrorPlane)
+        {
+            var clippedTriangles = new List<Triangle>();
+
+            foreach (var triangle in triangles)
+            {
+                var clippedTris = ClipTriangleToHalfSpace(triangle, mirrorPlane);
+                clippedTriangles.AddRange(clippedTris);
+            }
+
+            return clippedTriangles;
+        }
+
+        /// <summary>
+        /// Clip a single triangle to the positive half-space of the mirror plane
+        /// </summary>
+        private List<Triangle> ClipTriangleToHalfSpace(Triangle triangle, MirrorPlane mirrorPlane)
+        {
+            var result = new List<Triangle>();
+            var vertices = new[] { triangle.V1, triangle.V2, triangle.V3 };
+            var distances = new float[3];
+
+            // Calculate distance from each vertex to the mirror plane
+            for (int i = 0; i < 3; i++)
+            {
+                distances[i] = GetDistanceToMirrorPlane(vertices[i], mirrorPlane);
+            }
+
+            // Count vertices on positive side
+            var positiveCount = distances.Count(d => d >= 0);
+
+            if (positiveCount == 3)
+            {
+                // Entire triangle is on positive side
+                result.Add(triangle);
+            }
+            else if (positiveCount == 0)
+            {
+                // Entire triangle is on negative side - discard
+                return result;
+            }
+            else
+            {
+                // Triangle intersects the plane - need to clip
+                // For simplicity, we'll use a conservative approach and keep triangles
+                // that have at least one vertex on the positive side
+                if (positiveCount >= 1)
+                {
+                    result.Add(triangle);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get signed distance from a point to the mirror plane
+        /// </summary>
+        private float GetDistanceToMirrorPlane(Vector3<float> point, MirrorPlane mirrorPlane)
+        {
+            return mirrorPlane switch
+            {
+                MirrorPlane.XY => point.Z,  // Distance to Z=0 plane
+                MirrorPlane.XZ => point.Y,  // Distance to Y=0 plane  
+                MirrorPlane.YZ => point.X,  // Distance to X=0 plane
+                _ => 0
+            };
+        }
+
+        /// <summary>
+        /// Mirror a set of voxels across the specified mirror plane
+        /// </summary>
+        private HashSet<Vector3<int>> MirrorVoxels(HashSet<Vector3<int>> voxels, MirrorPlane mirrorPlane)
+        {
+            var mirroredVoxels = new HashSet<Vector3<int>>();
+
+            foreach (var voxel in voxels)
+            {
+                var mirrored = MirrorVoxel(voxel, mirrorPlane);
+                
+                // Only add if the mirrored voxel is different from the original
+                // (i.e., not exactly on the mirror plane)
+                if (!voxel.Equals(mirrored))
+                {
+                    mirroredVoxels.Add(mirrored);
+                }
+            }
+
+            return mirroredVoxels;
+        }
+
+        /// <summary>
+        /// Mirror a single voxel across the specified mirror plane
+        /// </summary>
+        private Vector3<int> MirrorVoxel(Vector3<int> voxel, MirrorPlane mirrorPlane)
+        {
+            return mirrorPlane switch
+            {
+                MirrorPlane.XY => new Vector3<int>(voxel.X, voxel.Y, -voxel.Z),  // Mirror across Z=0
+                MirrorPlane.XZ => new Vector3<int>(voxel.X, -voxel.Y, voxel.Z),  // Mirror across Y=0
+                MirrorPlane.YZ => new Vector3<int>(-voxel.X, voxel.Y, voxel.Z),  // Mirror across X=0
+                _ => voxel
+            };
         }
     }
 } 

@@ -1,6 +1,7 @@
 using Converter.Core;
 using EgsLib;
 using EgsLib.Blueprints;
+using System.IO;
 
 namespace Converter.GUI
 {
@@ -10,6 +11,11 @@ namespace Converter.GUI
         private CancellationTokenSource? _cancellationTokenSource;
         private bool _isConverting = false;
         private bool _isValidTemplate = false;
+        
+        // Mirror plane settings from preview window
+        private MirrorPlane _selectedMirrorPlane = MirrorPlane.None;
+        private bool _useMirrorVoxelization = false;
+        private List<Converter.Core.Triangle>? _transformedTriangles = null;
 
         // Block type data structures for different blueprint types
         private readonly Dictionary<string, int> _smallVesselBlocks = new()
@@ -340,6 +346,50 @@ namespace Converter.GUI
             }
         }
 
+        private void buttonPreviewMesh_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBoxMeshPath.Text))
+            {
+                MessageBox.Show("Please select a mesh file first.", "No Mesh File", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!File.Exists(textBoxMeshPath.Text))
+            {
+                MessageBox.Show("Selected mesh file does not exist.", "File Not Found", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            try
+            {
+                var previewWindow = new PreviewWindow();
+                previewWindow.LoadMesh(textBoxMeshPath.Text);
+                
+                if (previewWindow.ShowDialog() == true)
+                {
+                    // User selected a mirror plane and clicked Apply
+                    _selectedMirrorPlane = previewWindow.SelectedMirrorPlane;
+                    _useMirrorVoxelization = previewWindow.UseMirrorVoxelization;
+                    _transformedTriangles = previewWindow.GetTransformedTriangles();
+                    
+                    var rotationInfo = "";
+                    if (previewWindow.RotationX != 0 || previewWindow.RotationY != 0 || previewWindow.RotationZ != 0)
+                    {
+                        rotationInfo = $" with rotation X:{previewWindow.RotationX}° Y:{previewWindow.RotationY}° Z:{previewWindow.RotationZ}°";
+                    }
+                    
+                    UpdateStatus($"Preview applied - Mirror plane: {_selectedMirrorPlane}{rotationInfo}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening preview: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void buttonBrowseOutput_Click(object sender, EventArgs e)
         {
             using var folderDialog = new FolderBrowserDialog
@@ -515,7 +565,10 @@ namespace Converter.GUI
                 DilationRadius = (int)numericUpDownDilationRadius.Value,
                 CreateHollowHull = checkBoxHollow.Checked,
                 HollowRadius = (int)numericUpDownHollowRadius.Value,
-                MaxSize = (int)numericUpDownMaxSize.Value
+                MaxSize = (int)numericUpDownMaxSize.Value,
+                MirrorPlane = _selectedMirrorPlane,
+                UseMirrorVoxelization = _useMirrorVoxelization,
+                TransformedTriangles = _transformedTriangles
             };
         }
 

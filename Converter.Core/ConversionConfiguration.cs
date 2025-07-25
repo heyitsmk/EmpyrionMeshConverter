@@ -67,6 +67,32 @@ namespace Converter.Core
         /// Maximum size for any dimension of the output blueprint
         /// </summary>
         public int MaxSize { get; set; } = 500;
+
+        /// <summary>
+        /// Mirror plane for symmetrical voxelization (None, XY, XZ, YZ)
+        /// </summary>
+        public MirrorPlane MirrorPlane { get; set; } = MirrorPlane.None;
+
+        /// <summary>
+        /// Whether to use mirror-based voxelization (voxelize half and mirror to other half)
+        /// </summary>
+        public bool UseMirrorVoxelization { get; set; } = false;
+
+        /// <summary>
+        /// Pre-transformed triangles to use instead of loading from file (for preview rotations)
+        /// </summary>
+        public List<Triangle>? TransformedTriangles { get; set; } = null;
+    }
+
+    /// <summary>
+    /// Predefined mirror planes for symmetrical voxelization
+    /// </summary>
+    public enum MirrorPlane
+    {
+        None,  // No mirroring
+        XY,    // Mirror across XY plane (Z=0)
+        XZ,    // Mirror across XZ plane (Y=0) 
+        YZ     // Mirror across YZ plane (X=0)
     }
 
     /// <summary>

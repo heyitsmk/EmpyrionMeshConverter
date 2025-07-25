@@ -29,9 +29,18 @@ namespace Converter.Core
             progress?.Report("Loading template blueprint...");
             var templateBlueprint = LoadTemplateBlueprint(config.TemplateBlueprintPath);
 
-            // Step 2: Load mesh triangles
-            progress?.Report("Loading mesh file...");
-            var triangles = LoadMeshTriangles(config.InputMeshPath);
+            // Step 2: Load mesh triangles (or use pre-transformed ones)
+            List<Triangle> triangles;
+            if (config.TransformedTriangles != null && config.TransformedTriangles.Any())
+            {
+                progress?.Report("Using pre-transformed mesh data...");
+                triangles = config.TransformedTriangles;
+            }
+            else
+            {
+                progress?.Report("Loading mesh file...");
+                triangles = LoadMeshTriangles(config.InputMeshPath);
+            }
 
             // Step 3: Voxelize the mesh
             progress?.Report("Starting voxelization process...");

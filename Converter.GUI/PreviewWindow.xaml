@@ -1,0 +1,107 @@
+<Window x:Class="Converter.GUI.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="STL Preview" Height="700" Width="900"
+        WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+                        <!-- 3D Viewport -->
+        <Border Grid.Row="0" Background="DarkGray">
+            <Grid>
+                <!-- Coordinate axes legend -->
+                <TextBlock Text="World Axes: X=Red(Right), Y=Green(Up), Z=Blue(Forward)" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" 
+                           Margin="10" Background="White" Padding="5,2" 
+                           FontSize="10" Opacity="0.9"/>
+                
+                <Viewport3D x:Name="Viewport">
+            <!-- Camera -->
+            <Viewport3D.Camera>
+                <PerspectiveCamera x:Name="Camera" Position="10,10,10" LookDirection="-1,-1,-1" UpDirection="0,1,0" FieldOfView="60"/>
+            </Viewport3D.Camera>
+            
+            <!-- Enhanced Lights -->
+            <ModelVisual3D>
+                <ModelVisual3D.Content>
+                    <Model3DGroup>
+                        <AmbientLight Color="#404040"/>
+                        <DirectionalLight Color="White" Direction="-1,-1,-1"/>
+                        <DirectionalLight Color="#808080" Direction="1,1,-1"/>
+                        <DirectionalLight Color="#606060" Direction="0,-1,0"/>
+                    </Model3DGroup>
+                </ModelVisual3D.Content>
+            </ModelVisual3D>
+            
+                        <!-- Mesh will be added programmatically -->
+             
+         </Viewport3D>
+            </Grid>
+        </Border>
+        
+        <!-- Control Panel -->
+        <Border Grid.Row="1" Background="WhiteSmoke" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Rotation Controls -->
+                <GroupBox Grid.Row="0" Header="Mesh Orientation" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                            <TextBlock Text="Rotate:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Button x:Name="btnRotateXPos" Content="X +90°" Click="OnRotateClick" Tag="X,90" Margin="0,0,5,0" Padding="10,3"/>
+                            <Button x:Name="btnRotateXNeg" Content="X -90°" Click="OnRotateClick" Tag="X,-90" Margin="0,0,15,0" Padding="10,3"/>
+                            <Button x:Name="btnRotateYPos" Content="Y +90°" Click="OnRotateClick" Tag="Y,90" Margin="0,0,5,0" Padding="10,3"/>
+                            <Button x:Name="btnRotateYNeg" Content="Y -90°" Click="OnRotateClick" Tag="Y,-90" Margin="0,0,15,0" Padding="10,3"/>
+                            <Button x:Name="btnRotateZPos" Content="Z +90°" Click="OnRotateClick" Tag="Z,90" Margin="0,0,5,0" Padding="10,3"/>
+                            <Button x:Name="btnRotateZNeg" Content="Z -90°" Click="OnRotateClick" Tag="Z,-90" Margin="0,0,0,0" Padding="10,3"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                            <Button x:Name="btnResetRotation" Content="Reset Orientation" Click="OnResetRotationClick" Padding="15,5"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                
+                <!-- Mirror Plane Controls -->
+                <GroupBox Grid.Row="1" Header="Mirror Plane" Margin="0,0,0,10">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                        <RadioButton x:Name="radioNone" Content="None" 
+                                    IsChecked="True" Margin="0,0,15,0" 
+                                    Checked="OnMirrorPlaneChanged"/>
+                        
+                        <RadioButton x:Name="radioXY" Content="XY (Z=0)" 
+                                    Margin="0,0,15,0" 
+                                    Checked="OnMirrorPlaneChanged"/>
+                        
+                        <RadioButton x:Name="radioXZ" Content="XZ (Y=0)" 
+                                    Margin="0,0,15,0" 
+                                    Checked="OnMirrorPlaneChanged"/>
+                        
+                        <RadioButton x:Name="radioYZ" Content="YZ (X=0)" 
+                                    Margin="0,0,0,0" 
+                                    Checked="OnMirrorPlaneChanged"/>
+                    </StackPanel>
+                </GroupBox>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Apply &amp; Close" 
+                            Click="OnApplyClick" 
+                            Margin="0,0,10,0" 
+                            Padding="20,8"
+                            Background="LightGreen"/>
+                    <Button Content="Cancel" 
+                            Click="OnCancelClick" 
+                            Padding="20,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window> 
